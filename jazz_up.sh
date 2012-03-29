@@ -1,35 +1,34 @@
 #!/bin/bash
-# jazz up: arvotaan sopiva määrä jazzia alle tietyn aikarajan.
+# jazz up: shuffle a selection of music within given time limit.
 
-# Argumentit {{{
-# minuutit ovat 1. argumentti
+# Arguments {{{
+# First, minutes
 mins="$1" ; [ -z "$1" ] && mins=15
 
-# argumentin validius on tärkeää, ettei jouduta ikilooppiin.
-# Ei kuitenkaan tarkasta argumentin numeerisuutta.
+# Basic checks of time validity. Numberness is yet to test...
 if [ "$mins" -le 0 ]  ; then
-    echo Väärä aika: $mins
+    echo Bad time: $mins
     exit 1
 fi
 
-# soittolista toinen vaihtoehtoinen
+# Second, the playlist.  The original author prefers a playlist called
+# "dinnerjazz" as this was written specifically for that purpose
 playlist="$2" ; [ -z "$2" ] && playlist="dinnerjazz"
 #}}}
 
-echo -n Haetaan $mins minuuttia musiikkia...
+echo -n Finding $mins minutes of music... 
 mpc clear            > /dev/null
 mpc load "$playlist" > /dev/null
 mpc shuffle          > /dev/null
 
-# funktionaalisesti voittoon: kerätään listan ajat taulukkoon.
-# awk: lisää printtiin +$2, jos haluat tarkat kappaleajat käyttöön.
+# Functionality for the win. Collect track times in an array.
+# awk: modify print to have `+$2`, if you want to deal with exact times.
 declare -a LENGTH=(`mpc --format "%time%" playlist | awk -F: '{print $1*60 }'`)
 
-# lasketaan kertaalleen koko summa näistä.
-# tehdäänpä sekin funktionaalisesti
+# total time, also functionally
 TOTALTIME=`echo ${LENGTH[*]} | tr ' ' '+' | bc`
 
-# nyt varsinainen bisneslogiikka taas.
+# no longer functional.
 i=0
 (( requiredtime = mins*60 ))
 
@@ -41,6 +40,6 @@ do
     (( ++i ))
 done
 
-echo \ saimme $((TOTALTIME/60)) min
+echo \ we got $((TOTALTIME/60)) min
 mpc play
 
